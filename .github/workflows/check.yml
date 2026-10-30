@@ -4,8 +4,6 @@ name: Stock Management System Check
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   project-check:
@@ -20,3 +18,32 @@ jobs:
           echo "Checking Stock Management System..."
           test -f README.md
           echo "Project check completed successfully!"
+
+      - name: Update Jira task to Done
+        if: success()
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_ISSUE_KEY: SMS-11
+        run: |
+          TRANSITIONS=$(curl -sS --fail \
+            -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+            -H "Accept: application/json" \
+            "$JIRA_BASE_URL/rest/api/3/issue/$JIRA_ISSUE_KEY/transitions")
+
+          TRANSITION_ID=$(echo "$TRANSITIONS" | jq -r \
+            '.transitions[] | select(.to.name == "Done") | .id' | head -n 1)
+
+          if [ -z "$TRANSITION_ID" ]; then
+            echo "Done transition not available"
+            exit 1
+          fi
+
+          curl -sS --fail -X POST \
+            -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"transition\":{\"id\":\"$TRANSITION_ID\"}}" \
+            "$JIRA_BASE_URL/rest/api/3/issue/$JIRA_ISSUE_KEY/transitions"
+
+          echo "Jira task SMS-11 updated successfully!"
