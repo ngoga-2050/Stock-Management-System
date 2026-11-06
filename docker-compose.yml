@@ -1,0 +1,15 @@
+
+services:
+  backend:
+    image: ngoga2050/student-management-backend:latest
+    container_name: student-backend
+    ports:
+      - "5000:5000"
+
+  frontend:
+    image: ngoga2050/student-management-frontend:latest
+    container_name: student-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Management System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f0f2f5;
+            text-align: center;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1d4ed8;
+        }
+
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 70%;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Student Management System</h1>
+
+    <p>Welcome to our student management application.</p>
+
+    <button onclick="loadStudents()">
+        Load Students
+    </button>
+
+    <p id="message"></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Course</th>
+            </tr>
+        </thead>
+
+        <tbody id="studentData"></tbody>
+    </table>
+
+    <script>
+        async function loadStudents() {
+
+            try {
+                const response = await fetch('/api/students');
+
+                if (!response.ok) {
+                    throw new Error("Failed to load students");
+                }
+
+                const students = await response.json();
+
+                const table = document.getElementById("studentData");
+
+                table.innerHTML = "";
+
+                students.forEach(student => {
+
+                    table.innerHTML += `
+                        <tr>
+                            <td>${student.id}</td>
+                            <td>${student.name}</td>
+                            <td>${student.course}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById("message").innerText =
+                    "Students loaded successfully!";
+
+            } catch (error) {
+
+                document.getElementById("message").innerText =
+                    "Error connecting to backend!";
+            }
+        }
+    </script>
+
+</body>
+</html>
